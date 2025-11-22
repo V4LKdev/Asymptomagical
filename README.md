@@ -1,12 +1,20 @@
 # Asymptomagical - Multiplayer Systems & Hex-Grid Tech Sample (UE5, C++)
 
-Asymptomagical is a UE5 multiplayer group project.
-My main focus in this codebase is **networked gameplay architecture**, especially a **replicated hex-grid built on Instanced Static Meshes**, plus a **deep C++ Gameplay Ability System (GAS) integration** and clean session/user infrastructure.
+<div align="center">
+  <img src="Docs/gridutility.gif" alt="Hex grid editor utility GIF" width="85%" />
+  <br/>
+  <em>In-editor hex grid generation and edit workflow.</em>
+</div>
 
-The original goal was a small multiplayer prototype; the implementation evolved into a showcase of scalable UE patterns.
+Asymptomagical is a UE5 multiplayer group project.  
+My main focus in this codebase is **networked gameplay architecture**, especially a **replicated hex-grid built on Instanced Static Meshes**, alongside a **deep C++ Gameplay Ability System (GAS) integration** and clean session/user infrastructure.
 
-- **Engine / Stack:** Unreal Engine 5 (C++ + Blueprints), GAS, CommonUI, Online Subsystem  
+- **Engine / Stack:** Unreal Engine 5 (C++ & Blueprints), GAS, CommonUI, Online Subsystem  
 - **Focus areas:** multiplayer-ready systems, bandwidth-efficient replication, reusable GAS framework, editor-friendly workflows
+
+> **Note on assets:** The `/Content` folder is intentionally not included in this public snapshot.  
+> The project uses licensed assets (e.g., marketplace/Fab content) and the full content directory is too large to distribute here.  
+> This repository is therefore focused on the **C++ systems and architecture**; it is not directly runnable without providing your own assets.
 
 ---
 
@@ -14,12 +22,12 @@ The original goal was a small multiplayer prototype; the implementation evolved 
 
 - **Replicated Hexagonal Grid using Fast Array delta replication**
   - Server-authoritative tile state replicated via `FFastArraySerializer`
-  - Rendering through `UInstancedStaticMeshComponent` with per-tile data driving visuals
+  - Rendering through `UInstancedStaticMeshComponent`, driven by per-tile data
 - **GAS as the backbone for character actions and stats**
   - PlayerState-owned ASC for players, pawn-owned ASC for AI
   - Data-driven `AbilitySet` pattern for loadouts
 - **Decoupled user/session management via GameInstanceSubsystems**
-  - Clean facade over Online Subsystem (create/find/join sessions)
+  - Clean interface over Online Subsystem (create/find/join sessions)
   - Async user/login init separated from gameplay
 - **Modern UI framework using CommonUI**
   - Activatable widgets + widget stacks for robust navigation/input routing
@@ -31,16 +39,16 @@ The original goal was a small multiplayer prototype; the implementation evolved 
 ### 1) Hex Grid + Network-Optimized ISM Replication (`HexagonalGrid/`)
 The hex grid is managed by a single server-authoritative actor, avoiding one-actor-per-tile overhead.
 
-**Key idea:** tile state lives in a replicated fast array, so clients receive **only deltas** for tiles that change.
-This keeps bandwidth low and updates scalable even for large boards.
+**Key idea:** tile state lives in a replicated fast array, so clients receive **only deltas** for tiles that change.  
+This keeps bandwidth low and scalable even for large boards.
 
 - **`AHexGrid`**
   - Owns the authoritative tile array (`FTileDataArray`) replicated using `FFastArraySerializer`
   - Exposes gameplay entry points like `SetTagsOnTile(TileIndex, NewTags)`  
-  - Editor-side generation utilities (`CallInEditor`) for rapid iteration:  
+  - Editor generation utilities (`CallInEditor`) for rapid iteration:  
     `CreateHexGrid()`, `RaiseRim()`, `RandomizeHeight()`, `Clear()`
 - **Rendering**
-  - Uses **engine `UInstancedStaticMeshComponent`** (`ISMC`) to render all tiles as instances
+  - Uses engine **`UInstancedStaticMeshComponent`** (`ISMC`) to render all tiles as instances
   - Visual state (materials/colors) is driven by replicated tile data + tags on clients
 - **Replication lifecycle (example)**
   1. Ability targets a tile → calls `SetTagsOnTile()` on server  
@@ -48,7 +56,7 @@ This keeps bandwidth low and updates scalable even for large boards.
   3. Fast Array computes a delta and replicates only that tile’s change  
   4. Clients update local tile data and patch the corresponding ISMC instance
 
-> Note: `UHexInstancedStaticMeshComponent` exists as a thin placeholder from an earlier design;
+> Note: `UHexInstancedStaticMeshComponent` exists as a thin placeholder from an earlier design;  
 > the current implementation uses the standard ISMC directly for clarity and stability.
 
 ---
@@ -63,22 +71,19 @@ GAS is integrated in C++ as a reusable, multiplayer-safe foundation.
   - `AsymAbilitySet` – data asset bundling loadouts (abilities/effects/attributes)
 - **ASC ownership best practice**
   - **Players:** ASC on `AsymPlayerState` for persistence across respawns  
-  - **AI:** ASC on `AsymCharacter` (pawn-owned) for simplicity.
+  - **AI:** ASC on `AsymCharacter` (pawn-owned) for simplicity
 
 ---
 
 ### 3) EsotericUser / EsotericSession Plugins (`Plugins/EsotericUser/`)
-These subsystems handle identity + sessions as pure infrastructure, independent of gameplay.
-(The User plugin is highly inspired by Lyra's common-user plugin)
-
-The “Esoteric” naming is inherited from a previous project where this plugin started, but the implementation here
-is generic so that it works for Asymptomagical’s multiplayer flow.
+These subsystems handle identity + sessions as pure infrastructure, independent of gameplay (inspired by Lyra’s Common User pattern).
+The name prefix comes from another project I initially developed the plugins for.
 
 - **`UEsotericUserSubsystem`**
   - GameInstance-lifetime user/login state
   - Async init action to avoid blocking the game thread
 - **`UEsotericSessionSubsystem`**
-  - Clean facade over OSS session APIs
+  - Clean interface over OSS session APIs
   - UI-friendly methods for create/find/join
 
 ---
@@ -100,5 +105,6 @@ It’s excluded from this public snapshot because it’s being cleaned up and st
 
 ## Credits / contributions
 - **Programming & systems:** Nicolas Martin  
-- **Design:** Vladimir Eck, Alexander Kharkovski
-(Team development was done in Perforce; this repo is a curated public snapshot.)
+- **Design:** Vladimir Eck, Alexander Kharkovski  
+
+Team development was done in Perforce; this repository is a curated public snapshot.
