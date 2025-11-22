@@ -16,6 +16,12 @@ My main focus in this codebase is **networked gameplay architecture**, especiall
 > The project uses licensed assets (e.g., marketplace/Fab content) and the full content directory is too large to distribute here.  
 > This repository is therefore focused on the **C++ systems and architecture**; it is not directly runnable without providing your own assets.
 
+**Project demos (YouTube):**  
+Short clips showcasing key systems from this project.
+
+- **[Hex grid editor utility / ISM instance workflow](https://www.youtube.com/watch?v=33LPMI9CQf8)** – in-editor grid generation and per instance transform modification.
+- **[FastArray grid replication + gameplay tags demo](https://www.youtube.com/watch?v=5apv5UkOmcA)** – delta replication of tiles with tag-driven visual/state updates.
+
 ---
 
 ## Core concepts
